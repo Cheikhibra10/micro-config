@@ -1,0 +1,27 @@
+server:
+  port: 8090
+spring:
+  data:
+    mongodb:
+      username: cheikhibrambengue90
+      password: cheikh
+      host: localhost
+      port: 27017
+      database: customer
+      authentication-database: admin
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  resilience4j:
+    circuitbreaker:
+      configs:
+        default:
+          sliding-window-size: 20
+          failure-rate-threshold: 50
+      instances:
+        customerService:
+          base-config: default

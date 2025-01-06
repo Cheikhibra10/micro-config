@@ -1,0 +1,52 @@
+server:
+  port: 8222
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: customer-service
+          uri: lb://CUSTOMER-SERVICE
+          predicates:
+            - Path=/api/v1/customers/**
+        - id: customer-api-docs
+          uri: lb://CUSTOMER-SERVICE
+          predicates:
+            - Path=/api/v1/customers/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/customers/v3/api-docs, /v3/api-docs
+
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/v1/orders/**
+
+        - id: order-api-docs
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/v1/orders/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/orders/v3/api-docs, /v3/api-docs
+
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/api/v1/products/**
+
+        - id: product-api-docs
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/api/v1/products/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/products/v3/api-docs, /v3/api-docs
+
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/v1/payments/**
+
+        - id: payment-api-docs
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/v1/payments/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/payments/v3/api-docs, /v3/api-docs
