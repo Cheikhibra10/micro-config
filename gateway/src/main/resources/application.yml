@@ -1,0 +1,30 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          customer-service-client:
+            client-id: micro-services-api
+            client-secret: GRjxtcq8nlw6zpEuwBYizKPAMznkvZ7d
+            authorization-grant-type: client_credentials
+            scope: read,write
+            provider: keycloak  # Specify the provider here
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:9098/realms/micro-services
+
+  config:
+    import: optional:configserver:http://localhost:8888
+  application:
+    name: gateway-service
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+  logging:
+  level:
+  org.springframework.security: DEBUG
+  org.springframework.web.client.RestTemplate: DEBUG
+jwt:
+  issuer:
+   uri: http://localhost:9098/realms/micro-services
