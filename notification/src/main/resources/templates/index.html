@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Notifications</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #notifications {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #notifications p {
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 5px 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<h1>Real-Time Notifications</h1>
+<div id="notifications"></div>
+<input type="text" id="message" placeholder="Enter your message">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+    let stompClient = null;
+    let retryCount = 0;
+
+    function connect() {
+        console.log('Attempting to connect to WebSocket...');
+        const socket = new WebSocket('ws://localhost:8222/websocket-notifications'); // Native WebSocket
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            retryCount = 0; // Reset retry count
+            stompClient.subscribe('/topic/notifications', function (message) {
+                showNotification(message.body);
+            });
+        }, function (error) {
+            console.error('WebSocket connection error: ', error);
+            if (retryCount < 5) {
+                retryCount++;
+                console.log(`Retrying connection (${retryCount}/5)...`);
+                setTimeout(connect, 2000); // Retry after 2 seconds
+            } else {
+                console.error('Max retry attempts reached. Please check your connection.');
+            }
+        });
+    }
+
+    function sendMessage() {
+        const message = document.getElementById('message').value.trim();
+        if (!message) {
+            console.error('Message is empty.');
+            return;
+        }
+        if (stompClient && stompClient.connected) {
+            stompClient.send('/app/send-message', {}, message);
+            console.log('Message sent: ' + message);
+        } else {
+            console.error('WebSocket connection is not established.');
+        }
+    }
+
+    function showNotification(message) {
+        const notifications = document.getElementById('notifications');
+        const notification = document.createElement('p');
+        notification.textContent = message;
+        notifications.appendChild(notification);
+        notifications.scrollTop = notifications.scrollHeight; // Scroll to the bottom
+    }
+
+    // Close connection on page unload
+    window.addEventListener('beforeunload', () => {
+        if (stompClient && stompClient.connected) {
+            stompClient.disconnect(() => console.log('WebSocket disconnected.'));
+        }
+    });
+
+    // Connect on page load
+    connect();
+</script>
+</body>
+</html>
